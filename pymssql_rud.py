@@ -64,11 +64,9 @@ class pymssql_rud(object):
     ### SERVER ADDRESS ###
     # SET Server Address
     def setServerAddress(self, srv = '127.0.0.1'):
+        self.server = srv
         if self.debug == True:
-            self.server = srv
-            return self.server
-        else:
-            self.server = srv
+            print(self.server)
     
     # GET Server Address
     def getServerAddress(self):
@@ -77,10 +75,9 @@ class pymssql_rud(object):
     ### DATABASE NAME ###
     # SET Database Name
     def setDatabaseName(self, db = 'SQLEXPRESS'):
+        self.database = db
         if self.debug == True:
-            self.database = db
-        else:
-            self.database = db
+            print(self.database = db)
 
     # GET Database Name
     def getDatabaseName(self):
@@ -89,11 +86,9 @@ class pymssql_rud(object):
     ### USERNAME ###
     # SET Username
     def setUserName(self, user = ''):
+        self.username = user
         if self.debug == True:
-            self.username = user
-            return self.username
-        else:
-            self.username = user
+            print(self.username)
 
     # GET Username
     def getUserName(self):
@@ -102,11 +97,9 @@ class pymssql_rud(object):
     ### PASSWORD ###
     # SET Password
     def setPassword(self, pwd = ''):
+        self.password = pwd
         if self.debug == True:
-            self.password = pwd
-            return self.password
-        else:
-            self.password = pwd
+            print(self.password)
     
     # GET Password
     def getPassword(self):
@@ -115,11 +108,9 @@ class pymssql_rud(object):
     ### ODBC DRIVER ###
     # SET Driver DB (without {})
     def setDriverDB(self, drv = ''):
+        self.driver = '{' + drv + '}'
         if self.debug == True:
-            self.driver = '{' + drv + '}'
-            return self.driver
-        else:
-            self.driver = '{' + drv + '}'
+            print(self.driver)
 
     # GET Driver DB
     def getDriverDB(self):
@@ -128,11 +119,9 @@ class pymssql_rud(object):
     ### DSN STRING ###
     # SET DSN STRING
     def setDSN_String(self, dsn=''):
+        self.DSN_String = dsn
         if self.debug == True:
-            self.DSN_String = dsn
-            return self.password
-        else:
-            self.password = pwd
+            print(self.password)
     
     # GET DSN STRING
     def getDSN_String(self):
@@ -141,11 +130,9 @@ class pymssql_rud(object):
     ### TRUSTED CONNECTION ###
     # SET Trusted Connection
     def setTrustedConnection(self, trst=False):
+        self.trusted_Conn = trst
         if self.debug == True:
-            self.trusted_Conn = trst
-            return self.trusted_Conn
-        else:
-            self.trusted_Conn = trst
+            print(self.trusted_Conn)
 
     # GET Trusted Connection
     def getTrustedConnection(self):
