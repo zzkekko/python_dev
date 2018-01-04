@@ -121,7 +121,7 @@ class pymssql_rud(object):
     def setDSN_String(self, dsn=''):
         self.DSN_String = dsn
         if self.debug == True:
-            print(self.password)
+            print(self.DSN_String)
     
     # GET DSN STRING
     def getDSN_String(self):
