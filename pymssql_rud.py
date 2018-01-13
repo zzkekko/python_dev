@@ -381,6 +381,116 @@ class pymssql_rud(object):
         if self.debug == True:
             print(columnDet)
         return columnDet
+    
+    # GET ALL QUERY DETAILS
+    # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LANCH sys.dm_exec_describe_first_result
+    #  0 --> OK TRANSACTION SUCCEDED
+    # -1 --> ERROR! ROLLBACK TRANSACTION
+    # -2 --> OK TRANSACTION SUCCEDED, BUT IT COULDN'T CLOSE CURSOR
+    # -3 --> ERROR! ROLLBACK TRANSACTION, BUT IT COULDN'T CLOSE CURSOR
+    # return transaction_result, dataset[] --> dataset[<row>][<column>]
+    # COLUMN:
+    # 0: is_hidden
+    # 1: columns_ordinal
+    # 2: name
+    # 3: is_nullable
+    # 4: system_type_id
+    # 5: system_type_name
+    # 6: max_length
+    # 7: precision
+    # 8: sale
+    # 9: collation_name
+    # 10: user_type_id
+    # 11: user_type_database
+    # 12: user_type_schema
+    # 13: assembly_qualified_type_name
+    # 14: xml_collection_id
+    # 15: xml_collection_database
+    # 16: xml_collection_schema
+    # 17: xml_collection_name
+    # 18: is_xml_document
+    # 19: is_case_sensitive
+    # 20: is_fixed_length_clr_type
+    # 21: source_server
+    # 22: source_database
+    # 23: source_schema
+    # 24: source_table
+    # 25: source_column
+    # 26: is_identity_column
+    # 27: is_part_of_unique_key
+    # 28: is_updateable
+    # 29: is_computed_column
+    # 30: is_sparse_column_set
+    # 31: ordinal_in_order_by_list
+    # 32: order_by_is_descending
+    # 33: order_by_list_length
+    # 34: error_number
+    # 35: error_severity
+    # 36: error_state
+    # 37: error_message
+    # 38: error_type
+    # 39: error_type_desc
+    def getQueryAllDetails(self):
+        try:
+            transaction_result = 0
+            dataset = []
+            
+            # CREATING NEW CURSOR
+            cursor = self.conn.cursor()
+            if self.debug == True: 
+                print("New Cursor Created!")
+
+            # EXTRACT QUERY
+            query_c = "SELECT * FROM sys.dm_exec_describe_first_result_set ('" + self.query_text + "', NULL, 0)"
+            if self.debug == True:
+                print(query_c)
+                       
+            if self.debug == True: 
+                print("New List Created!")
+
+            # DATA TYPE
+            # for row in cursor.execute(query_c):
+            #    dataset.append(str(row.system_type_name))
+            
+            # EXECUTE QUERY
+            cursor.execute(query_c)
+
+            while True:
+                row = cursor.fetchone()
+                if row == None:
+                    break
+                if self.debug == True:
+                    print(str(row))
+                # SPLIT COLUMNS INTO B-DIMENSIONAL LIST
+                values_list = [x for x in row]
+                dataset.append(values_list)
+
+            if self.debug == True: 
+                print("Saving Data Type into List")
+            
+            transaction_result = 0
+        except:
+            if self.debug == True:
+                print("Error while tryng to retrieve columns data type")
+            transaction_result = -1
+            dataset.append("NO_DATA")
+        finally:
+            try:
+                # DELETE CURSOR
+                cursor.close()
+                if self.debug == True: 
+                    print("Cursor Closed!")
+                return transaction_result, dataset
+            except:
+                # CURSOR WAS NOT OPENED
+                if self.debug == True: 
+                    print("Cursor was already closed!")
+                if transaction_result == 0:
+                    transaction_result = -2
+                    return transaction_result, dataset
+                else:
+                    transaction_result = -3
+                    return transaction_result, dataset
 
 
     # GET QUERY SELECT DATASET
