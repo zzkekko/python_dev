@@ -295,9 +295,16 @@ class pymssql_rud(object):
         return self.query_type
 
     # GET COLUMNS NAME
-    # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LAUNCH sys.dm_exec_describe_first_result
+    # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LANCH sys.dm_exec_describe_first_result
+    #  0 --> OK TRANSACTION SUCCEDED
+    # -1 --> ERROR! ROLLBACK TRANSACTION
+    # -2 --> OK TRANSACTION SUCCEDED, BUT IT COULDN'T CLOSE CURSOR
+    # -3 --> ERROR! ROLLBACK TRANSACTION, BUT IT COULDN'T CLOSE CURSOR
     def getQueryColumnsName(self):
         try:
+            transaction_result = 0
+            dataset = []
+            
             # CREATING NEW CURSOR
             cursor = self.conn.cursor()
             if self.debug == True: 
@@ -309,34 +316,52 @@ class pymssql_rud(object):
             if self.debug == True:
                 print(query_c)
             
-            # CREATING LIST VARIABLE
-            query_column_name = []
-            
             if self.debug == True: 
                 print("New List Created!")
 
             # DATA TYPE
             for row in cursor.execute(query_c):
-                query_column_name.append(str(row.name))
+                dataset.append(str(row.name))
 
             if self.debug == True: 
                 print("Saving Data Type into List")
                 
-            return query_column_name
+            transaction_result = 0
         except:
             if self.debug == True:
-                print("Error while tryng to retrieve columns name! Maybe you have not granted to do this action on database.")
-            return [].append("NO_DATA")
+                print("Error while tryng to retrieve columns name!")
+            transaction_result = -1
+            dataset.append("NO_DATA")
         finally:
-            # DELETE CURSOR
-            cursor.close()
-            if self.debug == True: 
-                print("Cursor Closed!")
+            try:
+                # DELETE CURSOR
+                cursor.close()
+                if self.debug == True: 
+                    print("Cursor Closed!")
+                return transaction_result, dataset
+            except:
+                # CURSOR WAS NOT OPENED
+                if self.debug == True: 
+                    print("Cursor was already closed!")
+                if transaction_result == 0:
+                    transaction_result = -2
+                    return transaction_result, dataset
+                else:
+                    transaction_result = -3
+                    return transaction_result, dataset
 
     # GET COLUMNS DATA TYPE
     # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LAUNCH sys.dm_exec_describe_first_result
+    # RETURN:
+    #  0 --> OK TRANSACTION SUCCEDED
+    # -1 --> ERROR! ROLLBACK TRANSACTION
+    # -2 --> OK TRANSACTION SUCCEDED, BUT IT COULDN'T CLOSE CURSOR
+    # -3 --> ERROR! ROLLBACK TRANSACTION, BUT IT COULDN'T CLOSE CURSOR
     def getQueryColumnsDataType(self):
         try:
+            transaction_result = 0
+            dataset = []
+            
             # CREATING NEW CURSOR
             cursor = self.conn.cursor()
             if self.debug == True: 
@@ -346,42 +371,62 @@ class pymssql_rud(object):
             query_c = "SELECT system_type_name FROM sys.dm_exec_describe_first_result_set ('" + self.query_text + "', NULL, 0)"
             if self.debug == True:
                 print(query_c)
-            
-            # CREATING LIST VARIABLE
-            query_column_type = []
-            
+                       
             if self.debug == True: 
                 print("New List Created!")
 
             # DATA TYPE
             for row in cursor.execute(query_c):
-                query_column_type.append(str(row.system_type_name))
+                dataset.append(str(row.system_type_name))
 
             if self.debug == True: 
                 print("Saving Data Type into List")
             
-            return query_column_type
+            transaction_result = 0
         except:
             if self.debug == True:
                 print("Error while tryng to retrieve columns data type")
-            return [].append("NO_DATA")
+            transaction_result = -1
+            dataset.append("NO_DATA")
         finally:
-            # DELETE CURSOR
-            cursor.close()
-            if self.debug == True: 
-                print("Cursor Closed!")
+            try:
+                # DELETE CURSOR
+                cursor.close()
+                if self.debug == True: 
+                    print("Cursor Closed!")
+                return transaction_result, dataset
+            except:
+                # CURSOR WAS NOT OPENED
+                if self.debug == True: 
+                    print("Cursor was already closed!")
+                if transaction_result == 0:
+                    transaction_result = -2
+                    return transaction_result, dataset
+                else:
+                    transaction_result = -3
+                    return transaction_result, dataset
 
     # GET TABLE NAME & TYPE
     # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LAUNCH sys.dm_exec_describe_first_result
     def getQueryColumnsDetails(self):
-        columnDet = []
-        columnDet.append(self.getQueryColumnsName()) 
-        columnDet.append(self.getQueryColumnsDataType())
+        try:
+            columnDet = []
+            cn = self.getQueryColumnsName()
+            cd = self.getQueryColumnsDataType()
 
-        if self.debug == True:
-            print(columnDet)
-        return columnDet
-    
+            if cn[0] == 0 and cd[0] == 0:
+                columnDet.append(0)
+                columnDet.append(cn[1])
+                columnDet.append(cd[1])
+            else:
+                columnDet.append(-1, cn[1], cd[1])
+
+            if self.debug == True:
+                print(columnDet)
+            return columnDet
+        except:
+            return -1
+
     # GET ALL QUERY DETAILS
     # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LANCH sys.dm_exec_describe_first_result
     #  0 --> OK TRANSACTION SUCCEDED
@@ -493,6 +538,7 @@ class pymssql_rud(object):
                     return transaction_result, dataset
 
 
+
     # GET QUERY SELECT DATASET
     # HOWTO:
     # - Pass the Number of records you want to extract; default = -1, it means that all records will be extracted
@@ -534,7 +580,9 @@ class pymssql_rud(object):
                             break
                         if self.debug == True:
                             print(str(row))
-                        dataset.append(str(row))
+                        # SPLIT COLUMNS INTO B-DIMENSIONAL LIST
+                        values_list = [x for x in row]
+                        dataset.append(values_list)
                         i = i + 1
                 else:
                     while True:
@@ -543,11 +591,9 @@ class pymssql_rud(object):
                             break
                         if self.debug == True:
                             print(str(row))
-                        dataset.append(str(row))
-
-                    if self.debug == True:
-                        for row in cursor.fetchall():
-                            print(str(row))
+                        # SPLIT COLUMNS INTO B-DIMENSIONAL LIST
+                        values_list = [x for x in row]
+                        dataset.append(values_list)
             
                 transaction_result = 0
             except:
