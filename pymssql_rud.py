@@ -424,7 +424,9 @@ class pymssql_rud(object):
                             break
                         if self.debug == True:
                             print(str(row))
-                        dataset.append(str(row))
+                        # SPLIT COLUMNS INTO B-DIMENSIONAL LIST
+                        values_list = [x for x in row]
+                        dataset.append(values_list)
                         i = i + 1
                 else:
                     while True:
@@ -433,11 +435,9 @@ class pymssql_rud(object):
                             break
                         if self.debug == True:
                             print(str(row))
-                        dataset.append(str(row))
-
-                    if self.debug == True:
-                        for row in cursor.fetchall():
-                            print(str(row))
+                        # SPLIT COLUMNS INTO B-DIMENSIONAL LIST
+                        values_list = [x for x in row]
+                        dataset.append(values_list)
             
                 transaction_result = 0
             except:
