@@ -295,7 +295,7 @@ class pymssql_rud(object):
         return self.query_type
 
     # GET COLUMNS NAME
-    # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LANCH sys.dm_exec_describe_first_result
+    # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LAUNCH sys.dm_exec_describe_first_result
     def getQueryColumnsName(self):
         try:
             # CREATING NEW CURSOR
@@ -334,7 +334,7 @@ class pymssql_rud(object):
                 print("Cursor Closed!")
 
     # GET COLUMNS DATA TYPE
-    # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LANCH sys.dm_exec_describe_first_result
+    # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LAUNCH sys.dm_exec_describe_first_result
     def getQueryColumnsDataType(self):
         try:
             # CREATING NEW CURSOR
@@ -372,7 +372,7 @@ class pymssql_rud(object):
                 print("Cursor Closed!")
 
     # GET TABLE NAME & TYPE
-    # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LANCH sys.dm_exec_describe_first_result
+    # ATTENTION!!!: IT REQUIRES DATABASE's PERMISSION TO LAUNCH sys.dm_exec_describe_first_result
     def getQueryColumnsDetails(self):
         columnDet = []
         columnDet.append(self.getQueryColumnsName()) 
@@ -388,11 +388,11 @@ class pymssql_rud(object):
     # - Pass the Number of records you want to extract; default = -1, it means that all records will be extracted
     # ATTENTION: The performance decrease where tables have tons of data
     # RETURN:
-    #  0 --> OK TRANSCATION SUCCEDED
+    #  0 --> OK TRANSACTION SUCCEDED
     # -1 --> ERROR! ROLLBACK TRANSACTION
     # -2 --> OK TRANSACTION SUCCEDED, BUT IT COULDN'T CLOSE CURSOR
     # -3 --> ERROR! ROLLBACK TRANSACTION, BUT IT COULDN'T CLOSE CURSOR
-    # -4 --> ANYTHING TRANSACTION WAS COMMITTED
+    # -4 --> NOTHING TRANSACTION WAS COMMITTED
     #
     # return transaction_result, dataset[]
     def getQuerySelectDataset(self, records=-1):
@@ -473,11 +473,11 @@ class pymssql_rud(object):
 
     # INSERT/UPDATE/DELETE/TRUNCATE QUERY
     # RETURN:
-    #  0 --> OK TRANSCATION SUCCEDED
+    #  0 --> OK TRANSACTION SUCCEDED
     # -1 --> ERROR! ROLLBACK TRANSACTION
     # -2 --> OK TRANSACTION SUCCEDED, BUT IT COULDN'T CLOSE CURSOR
     # -3 --> ERROR! ROLLBACK TRANSACTION, BUT IT COULDN'T CLOSE CURSOR
-    # -4 --> ANYTHING TRANSACTION WAS COMMITTED
+    # -4 --> NOTHING TRANSACTION WAS COMMITTED
     def insUpdDelQueryData(self):
         # TRANSACTION RESULT
         transaction_result = 0
@@ -532,3 +532,21 @@ class pymssql_rud(object):
                 print("Error! Query isn't INSERT or UPDATE or DELETE or TRUNCATE!")
             transaction_result = -4
             return transaction_result
+        
+        
+    # CHECKING CONNECTION STATUS
+    # 0 --> OK CONNECTION WORKS
+    # -1 --> ERROR, SOMETHING WRONG
+    def check_conn(self):
+        # SET a SIMPLE QUERY 1 + 1 = 2
+        self.setQuery("SELECT 1 + 1")
+        r = self.getQuerySelectDataset()
+
+        if r[0] == 0:
+            if self.debug == True:
+                print(str(r[0]))
+            return 0
+        else:
+            if self.debug == True:
+                print("Error in launching query!")
+            return -1
