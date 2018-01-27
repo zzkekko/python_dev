@@ -694,15 +694,41 @@ class pymssql_rud(object):
     # 0 --> OK CONNECTION WORKS
     # -1 --> ERROR, SOMETHING WRONG
     def check_conn(self):
-        # SET a SIMPLE QUERY 1 + 1 = 2
-        self.setQuery("SELECT 1 + 1")
-        r = self.getQuerySelectDataset()
+        # VARIABLE TO RETURN
+        transaction_result = 0
+        try:
+            # CREATING NEW CURSOR
+            cursor = self.conn.cursor()
+            if self.debug == True: 
+                print("New Cursor Created!")
 
-        if r[0] == 0:
+            # EXTRACT QUERY
+            cursor.execute("SELECT 1 + 1")
             if self.debug == True:
-                print(str(r[0]))
-            return 0
-        else:
+                print("SELECT 1 + 1")
+            
+            # CHECK IF DB is CONNECTED
+            row = cursor.fetchall()
             if self.debug == True:
-                print("Error in launching query!")
-            return -1
+                    print(str(row[0][0]))
+            if str(row[0][0]) == '2':
+                transaction_result = 0
+            else:
+                transaction_result = -1
+        except:
+            if self.debug == True: 
+                print("Error! Return NO_DATA")
+            transaction_result = -1
+        finally:
+            try:
+                # DELETE CURSOR
+                cursor.close()
+                if self.debug == True: 
+                    print("Cursor Closed!")
+                return transaction_result
+            except:
+                # CURSOR WAS NOT OPENED
+                if self.debug == True: 
+                    print("Something goes wrong!")
+                transaction_result = -1
+                return transaction_result
